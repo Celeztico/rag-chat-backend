@@ -76,7 +76,7 @@ This project is intentionally kept simple and is meant for **learning, experimen
 ## 🔐 Environment Variables
 
 Create a `.env` file in the project root:
-
+GROQ_API_KEY=your_groq_api_key_here
 
 ---
 
