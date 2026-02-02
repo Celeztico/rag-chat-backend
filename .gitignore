@@ -1,0 +1,78 @@
+
+./venv/
+
+# ========================
+# Python cache & bytecode
+# ========================
+__pycache__/
+./app/pycache/
+./app/rag/__pycache__/
+*.py[cod]
+*$py.class
+
+# ========================
+# Virtual environments
+# ========================
+venv/
+.venv/
+env/
+ENV/
+
+# ========================
+# Environment variables
+# ========================
+.env
+
+# ========================
+# OS generated files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Editor / IDE settings
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+# Python packaging
+# ========================
+*.egg-info/
+dist/
+build/
+
+# ========================
+# Logs
+# ========================
+*.log
+
+# ========================
+# Project data (DO NOT COMMIT)
+# ========================
+data/uploads/
+data/chroma/
+
+# ========================
+# Torch / HuggingFace cache
+# ========================
+.cache/
+torch_cache/
+hf_cache/
+
+# HuggingFace default cache locations
+~/.cache/huggingface/
+~/.cache/torch/
+
+# ========================
+# Jupyter / notebooks (if used later)
+# ========================
+.ipynb_checkpoints/
+
+# ========================
+# Temporary files
+# ========================
+tmp/
+temp/
