@@ -52,8 +52,7 @@ build/
 # ========================
 # Project data (DO NOT COMMIT)
 # ========================
-data/uploads/
-data/chroma/
+data/*
 
 # ========================
 # Torch / HuggingFace cache
