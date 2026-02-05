@@ -8,7 +8,7 @@ load_dotenv()
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_API=os.getenv('GROQ_API_KEY')
-print("GROQ_API Key:", GROQ_API)
+# print("GROQ_API Key:", GROQ_API)
 
 def ask_groq(prompt: str) -> str:
     response = requests.post(
@@ -29,9 +29,9 @@ def ask_groq(prompt: str) -> str:
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
 
-def answer_question(question: str) -> str:
+def answer_question(question, user_id, chat_id):
     query_embedding = embed_texts([question])[0]
-    results = search(query_embedding)
+    results = search(query_embedding, user_id, chat_id)
 
     context_chunks = results["documents"][0]
     context = "\n".join(context_chunks)
