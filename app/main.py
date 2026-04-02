@@ -1,5 +1,7 @@
 import shutil
+import asyncio
 from fastapi import UploadFile, File, FastAPI, Depends, HTTPException
+from contextlib import asynccontextmanager
 from app.rag.pdf_loader import extract_text
 from app.rag.chunker import chunk_text
 from app.rag.embeddings import embed_texts
@@ -17,10 +19,24 @@ from app.documents.models import Document
 from app.chats.routes import router as chat_router
 from app.documents.routes import router as doc_router
 from app.chats.schemas import AskRequest
+from app.utils.cleanup import cleanup_uploads
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="RAG Learning Project")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    
+    # 🔹 Startup logic
+    print("Running cleanup on startup...")
+    await asyncio.to_thread(cleanup_uploads, days=7)
+
+    yield
+
+    # 🔹 Shutdown logic (temporary logic )
+    print("Shutting down app...")
+
+
+app = FastAPI(title="RAG Learning Project", lifespan=lifespan)
 
 app.include_router(auth_router)
 app.include_router(chat_router)
