@@ -29,22 +29,32 @@ def ask_groq(prompt: str) -> str:
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
 
-def answer_question(question, user_id, chat_id):
+def answer_question(question, user_id, chat_id, history):
     query_embedding = embed_texts([question])[0]
     results = search(query_embedding, user_id, chat_id)
 
     context_chunks = results["documents"][0]
-    context = "\n".join(context_chunks)
-
+    context = ""
+    #print("FULL RESULTS:", results)
+    #print("DOCUMENTS RAW:", results.get("documents"))
+    #print("FIRST DOC LIST:", results.get("documents")[0] if results.get("documents") else None)
+    for i, doc in enumerate(context_chunks):
+        context += f"[{i}] {doc}\n"
+    #print("CONTEXT:", context)
+    #print("HISTORY:", history)
     prompt = f"""
 Answer the question using ONLY the context below.
 
+Each chunk has a number [i]. If you use information from a chunk, cite it like this: [i]([0], [1], ...).
 Context:
 {context}
+
+Conversation so far:
+{history}
 
 Question:
 {question}
 
 Answer:
 """
-    return ask_groq(prompt)
+    return ask_groq(prompt),context_chunks

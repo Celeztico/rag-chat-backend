@@ -1,10 +1,9 @@
 import chromadb
+import os
 
-client = chromadb.Client(
-    chromadb.config.Settings(
-        persist_directory="data/chroma"
-    )
-)
+os.makedirs("data/chroma", exist_ok=True)
+
+client = chromadb.PersistentClient(path="data/chroma")
 
 collection = client.get_or_create_collection("rag_test")
 
@@ -27,6 +26,8 @@ def add_documents(chunks, embeddings, user_id, chat_id):
         metadatas=metadata,
         ids=ids
     )
+
+    #client.persist()
 
 def search(query_embedding,user_id, chat_id, k=5):
     return collection.query(

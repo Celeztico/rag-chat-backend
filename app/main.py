@@ -12,7 +12,7 @@ from app.db.database import engine, Base
 from app.auth.models import User
 from app.auth.routes import router as auth_router
 from app.auth.security import get_current_user
-from app.chats.models import Chat
+from app.chats.models import Chat, Message
 from app.documents.models import Document
 from app.chats.routes import router as chat_router
 from app.documents.routes import router as doc_router
@@ -59,8 +59,40 @@ def ask(
     if not chat:
         raise HTTPException(404, "Chat not found")
     
-    answer = answer_question(data.question, user.id, data.chat_id)
-    return {"answer": answer}
+    # Save user message
+    msg = Message(
+        chat_id=data.chat_id,
+        role="user",
+        content=data.question
+    )
+    db.add(msg)
+    db.commit()
+
+    messages = db.query(Message).filter(
+        Message.chat_id == data.chat_id
+    ).order_by(Message.created_at.desc()).limit(6).all()
+
+    messages.reverse()
+
+    history = "\n".join(
+    f"{m.role}: {m.content}" for m in messages
+    )
+        
+    answer,docs = answer_question(data.question, user.id, data.chat_id, history)
+
+    # Save assistant message
+    msg = Message(
+        chat_id=data.chat_id,
+        role="assistant",
+        content=answer
+    )
+    db.add(msg)
+    db.commit()
+
+    return {
+        "answer": answer,
+        "sources": docs
+    }
 
 from app.rag.vector_store import debug_count
 
