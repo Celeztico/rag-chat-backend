@@ -35,13 +35,9 @@ def answer_question(question, user_id, chat_id, history):
 
     context_chunks = results["documents"][0]
     context = ""
-    #print("FULL RESULTS:", results)
-    #print("DOCUMENTS RAW:", results.get("documents"))
-    #print("FIRST DOC LIST:", results.get("documents")[0] if results.get("documents") else None)
     for i, doc in enumerate(context_chunks):
         context += f"[{i}] {doc}\n"
-    #print("CONTEXT:", context)
-    #print("HISTORY:", history)
+
     prompt = f"""
 Answer the question using ONLY the context below.
 

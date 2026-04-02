@@ -26,8 +26,7 @@ def add_documents(chunks, embeddings, user_id, chat_id):
         metadatas=metadata,
         ids=ids
     )
-
-    #client.persist()
+    
 
 def search(query_embedding,user_id, chat_id, k=5):
     return collection.query(
