@@ -72,3 +72,27 @@ def upload_document(
     )
 
     return {"message": "Uploaded"}
+
+router.get("/status/{chat_id}")
+def get_status(
+    chat_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    docs = db.query(Document).filter(
+        Document.chat_id == chat_id,
+        Document.user_id == user.id
+    ).all()
+
+    if not docs:
+        return {"status": "no_documents"}
+    
+    statuses = [doc.status for doc in docs]
+
+    if all(s == "ready" for s in statuses):
+        return {"status": "ready"}
+    
+    if any(s == "failed" for s in statuses):
+        return {"status": "failed"}
+    
+    return {"status": "processing"}
