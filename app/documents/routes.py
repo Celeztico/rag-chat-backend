@@ -1,5 +1,5 @@
 import os, shutil
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.chats.models import Chat
@@ -15,6 +15,7 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 @router.post("/upload/{chat_id}")
 def upload_document(
     chat_id: int,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
@@ -47,17 +48,51 @@ def upload_document(
         user_id=user.id,
         chat_id=chat_id,
         filename=file.filename,
-        path=path
+        path=path,
+        status="processing"
     )
 
     db.add(doc)
     db.commit()
 
-      # Process for RAG
-    process_pdf_for_rag(
+      # Process for RAG (deprecated)
+    """process_pdf_for_rag(
         path,
         user.id,
         chroma_chat_id
+    )"""
+
+    background_tasks.add_task(
+        process_pdf_for_rag,
+        path,
+        user.id,
+        chroma_chat_id,
+        doc.id,
+        db
     )
 
     return {"message": "Uploaded"}
+
+router.get("/status/{chat_id}")
+def get_status(
+    chat_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    docs = db.query(Document).filter(
+        Document.chat_id == chat_id,
+        Document.user_id == user.id
+    ).all()
+
+    if not docs:
+        return {"status": "no_documents"}
+    
+    statuses = [doc.status for doc in docs]
+
+    if all(s == "ready" for s in statuses):
+        return {"status": "ready"}
+    
+    if any(s == "failed" for s in statuses):
+        return {"status": "failed"}
+    
+    return {"status": "processing"}

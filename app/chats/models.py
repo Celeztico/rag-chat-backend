@@ -10,3 +10,12 @@ class Chat(Base):
     title = Column(String, nullable=False)
     scope = Column(String, default="global") # to separate global and isolated chats
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    role = Column(String)  # "user" or "assistant"
+    content = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)

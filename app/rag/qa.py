@@ -29,22 +29,57 @@ def ask_groq(prompt: str) -> str:
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
 
-def answer_question(question, user_id, chat_id):
+def answer_question(question, user_id, chat_id, history):
     query_embedding = embed_texts([question])[0]
     results = search(query_embedding, user_id, chat_id)
 
-    context_chunks = results["documents"][0]
-    context = "\n".join(context_chunks)
+    docs = results["documents"][0]
+    metas = results["metadatas"][0]
+    distances = results["distances"][0]
+
+    filtered = [
+    (doc, meta, dist)
+    for doc, meta, dist in zip(docs, metas, distances)
+    if dist < 1.5   # tweak later
+    ]
+
+    # fallback if everything filtered out
+    if not filtered:
+        filtered = list(zip(docs, metas, distances))[:3]
+
+    docs = [d[0] for d in filtered]
+    metas = [d[1] for d in filtered]
+
+    if not docs:
+        return "No relevant information found...", []
+
+    sources = [
+        {
+            "text": doc,
+            "file": meta["filename"],
+            "chunk": meta["chunk_index"]
+        }
+        for doc, meta in zip(docs, metas)
+    ]
+    context = ""
+    for i, doc in enumerate(docs):
+        context += f"[{i}] {doc}\n"
 
     prompt = f"""
 Answer the question using ONLY the context below.
+if you don't know the answer, say you don't have enough information. Do not use hisotry blindly if context is empty. Always prefer saying you don't know over making things up.
 
+Each chunk has a number [i]. If you use information from a chunk, cite it like this: [i].
 Context:
 {context}
+
+Conversation so far(history):
+{history}
 
 Question:
 {question}
 
 Answer:
 """
-    return ask_groq(prompt)
+    answer = ask_groq(prompt)
+    return answer, sources
