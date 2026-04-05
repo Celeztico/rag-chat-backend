@@ -84,6 +84,7 @@ def ask(
     db.add(msg)
     db.commit()
 
+    # NOTE: build hybrid history with semantic search in future after most of the important things are done for now use heuristic history.
     messages = db.query(Message).filter(
         Message.chat_id == data.chat_id
     ).order_by(Message.created_at.desc()).limit(6).all()
@@ -91,9 +92,10 @@ def ask(
     messages.reverse()
 
     history = "\n".join(
-    f"{m.role}: {m.content}" for m in messages
+        f"{m.role.upper()}: {m.content}" 
+        for m in messages
     )
-        
+    history = history[-2000:]  # trim history if too long
     answer,docs = answer_question(data.question, user.id, data.chat_id, history)
 
     # Save assistant message
