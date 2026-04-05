@@ -33,9 +33,19 @@ def answer_question(question, user_id, chat_id, history):
     query_embedding = embed_texts([question])[0]
     results = search(query_embedding, user_id, chat_id)
 
-    context_chunks = results["documents"][0]
+    docs = results["documents"][0]
+    metas = results["metadatas"][0]
+
+    sources = [
+        {
+            "text": doc,
+            "file": meta["filename"],
+            "chunk": meta["chunk_index"]
+        }
+        for doc, meta in zip(docs, metas)
+    ]
     context = ""
-    for i, doc in enumerate(context_chunks):
+    for i, doc in enumerate(docs):
         context += f"[{i}] {doc}\n"
 
     prompt = f"""
@@ -53,4 +63,5 @@ Question:
 
 Answer:
 """
-    return ask_groq(prompt),context_chunks
+    answer = ask_groq(prompt)
+    return answer, sources

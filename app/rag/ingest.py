@@ -27,6 +27,7 @@ def process_pdf_for_rag(path, user_id, chat_id):
         chunks,
         embeddings,
         user_id,
-        chat_id
+        chat_id,
+        filename=path.split("/")[-1]
     )
     # print("ADDED TO CHROMA")

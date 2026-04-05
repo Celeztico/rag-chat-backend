@@ -11,13 +11,18 @@ def debug_count():
     return collection.count()
 
 
-def add_documents(chunks, embeddings, user_id, chat_id):
+def add_documents(chunks, embeddings, user_id, chat_id, filename):
     ids = [f"{user_id}_{chat_id}_{i}" for i in range(len(chunks))]
     chat_value = "global" if chat_id is None else str(chat_id)
 
     metadata = [
-        {"user_id": user_id, "chat_id": chat_value}
-        for _ in chunks
+        {
+            "user_id": user_id,
+            "chat_id": chat_value,
+            "filename":filename,
+            "chunk_index":i
+        }
+        for i in range(len(chunks))
     ]
     
     collection.add(
