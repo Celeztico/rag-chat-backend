@@ -2,6 +2,7 @@ from app.rag.pdf_loader import extract_text
 from app.rag.chunker import chunk_text
 from app.rag.embeddings import embed_texts
 from app.rag.vector_store import add_documents
+from app.utils.logger import logger
 
 # remove log statements in future
 
@@ -22,6 +23,8 @@ def process_pdf_for_rag(path, user_id, chat_id):
 
     embeddings = embed_texts(chunks)
     # print("EMBEDDINGS:", len(embeddings))
+
+    logger.info(f"INGESTING: {path},{user_id},{chat_id} - Chunks: {len(chunks)}, Embeddings: {len(embeddings)}")
 
     add_documents(
         chunks,
