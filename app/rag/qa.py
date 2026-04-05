@@ -35,6 +35,16 @@ def answer_question(question, user_id, chat_id, history):
 
     docs = results["documents"][0]
     metas = results["metadatas"][0]
+    distances = results["distances"][0]
+
+    filtered = [
+    (doc, meta, dist)
+    for doc, meta, dist in zip(docs, metas, distances)
+    if dist < 1.5   # tweak later
+    ]
+
+    docs = [d[0] for d in filtered]
+    metas = [d[1] for d in filtered]
 
     sources = [
         {
