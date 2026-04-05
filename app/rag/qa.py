@@ -43,8 +43,15 @@ def answer_question(question, user_id, chat_id, history):
     if dist < 1.5   # tweak later
     ]
 
+    # fallback if everything filtered out
+    if not filtered:
+        filtered = list(zip(docs, metas, distances))[:3]
+
     docs = [d[0] for d in filtered]
     metas = [d[1] for d in filtered]
+
+    if not docs:
+        return "No relevant information found...", []
 
     sources = [
         {
@@ -60,12 +67,13 @@ def answer_question(question, user_id, chat_id, history):
 
     prompt = f"""
 Answer the question using ONLY the context below.
+if you don't know the answer, say you don't have enough information. Do not use hisotry blindly if context is empty. Always prefer saying you don't know over making things up.
 
-Each chunk has a number [i]. If you use information from a chunk, cite it like this: [i]([0], [1], ...).
+Each chunk has a number [i]. If you use information from a chunk, cite it like this: [i].
 Context:
 {context}
 
-Conversation so far:
+Conversation so far(history):
 {history}
 
 Question:
