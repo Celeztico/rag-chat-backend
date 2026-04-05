@@ -10,4 +10,5 @@ class Document(Base):
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=True)
     filename = Column(String)
     path = Column(String)
+    status = Column(String, default="processing")
     created_at = Column(DateTime, default=datetime.utcnow)

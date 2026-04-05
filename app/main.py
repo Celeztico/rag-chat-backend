@@ -75,6 +75,14 @@ def ask(
     if not chat:
         raise HTTPException(404, "Chat not found")
     
+    docs = db.query(Document).filter(
+    Document.chat_id == data.chat_id,
+    Document.user_id == user.id
+    ).all()
+
+    if any(doc.status != "ready" for doc in docs):
+        raise HTTPException(202, "Documents are still being processed. Try again shortly.")
+    
     # Save user message
     msg = Message(
         chat_id=data.chat_id,
@@ -96,7 +104,7 @@ def ask(
         for m in messages
     )
     history = history[-2000:]  # trim history if too long
-    answer,docs = answer_question(data.question, user.id, data.chat_id, history)
+    answer,sources = answer_question(data.question, user.id, data.chat_id, history)
 
     # Save assistant message
     msg = Message(
@@ -109,7 +117,7 @@ def ask(
 
     return {
         "answer": answer,
-        "sources": docs
+        "sources": sources
     }
 
 from app.rag.vector_store import debug_count
