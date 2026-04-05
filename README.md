@@ -20,6 +20,8 @@ This system supports secure **authentication**, **multi-chat conversations**,
 - Multiple chats per user
 - Chat-based conversation structure
 - User-level isolation
+- Persistent message history per chat
+- Context-aware conversations using chat history
 
 ### 📄 Document Management
 - Upload text-based PDF files
@@ -27,19 +29,30 @@ This system supports secure **authentication**, **multi-chat conversations**,
 - Chat-specific document support
 - Organized per-user storage
 - Automatic ingestion into vector database
+- Background processing for PDF ingestion
+- Document processing status tracking (processing, ready, failed)
 
 ### 🧠 RAG Pipeline
 - PDF text extraction
-- Text chunking
+- Adaptive Text chunking (small docs → single chunk, large docs → overlapping chunks)
 - Embedding generation
 - Vector storage using ChromaDB
 - Metadata-based filtering
 - Scoped retrieval (user + chat + global)
+- Relevance filtering with fallback mechanism
+- Structured citations with metadata (filename, chunk index)
+- No-context fallback handling to prevent hallucinated answers
+
+### ⚡ Async Processing
+- BackgroundTasks-based PDF ingestion
+- Non-blocking upload endpoint
+- Status-based query gating (prevents querying before indexing)
 
 ### 🤖 LLM Integration
 - Groq API
 - Context-grounded responses
-- Reduced hallucination behavior
+- Context-enforced answering (no answer without retrieved context)
+- Citation-aware responses referencing source chunks
 
 ---
 
@@ -62,7 +75,7 @@ This system supports secure **authentication**, **multi-chat conversations**,
 ### RAG Pipeline
 - **PyPDF** – PDF text extraction
 - **Sentence-Transformers** – local embeddings (`all-MiniLM-L6-v2`)
-- **ChromaDB (local)** – vector database
+- **ChromaDB (local)** – persistent vector database
 - **Groq API** – LLM for answering questions
 
 ### Utilities
@@ -209,11 +222,31 @@ POST /documents/upload/{chat_id}
 - **chat_id** → ID of the target chat
 - File → PDF document
 
-The file is automatically processed and added to the vector database.
+The file is uploaded immediately and processed asynchronously in the background.
+
+Use the status endpoint to check when processing is complete before querying.
 
 ---
 
-### 5️⃣ Ask a Question
+### 5️⃣ Check Processing Status
+
+Check whether uploaded documents are ready for querying.
+
+```bash
+GET /documents/status/{chat_id}
+```
+
+Response:
+
+```json
+{
+  "status": "processing" | "ready" | "failed" | "no_documents"
+}
+```
+
+---
+
+### 6️⃣ Ask a Question
 
 Query the RAG system.
 
@@ -229,15 +262,19 @@ Request body:
 }
 ```
 
-The system retrieves relevant context and generates an answer.
 
----
+Returns a context-aware response with citations.
+
+If documents are still processing, returns:
+
+```http
+HTTP/1.1 202 Accepted
+```
 
 ---
 
 ## 📂 Storage Layout
 
----
 
 ### File System Structure
 
@@ -263,6 +300,13 @@ This enables strict per-user and per-chat filtering.
 
 ---
 
+## 🧹 Data Management
+
+- Automatic cleanup of old uploaded files on server startup
+- Configurable retention period for uploaded documents
+
+---
+
 ## 🔒 Security Model
 
 The system enforces security at multiple layers:
@@ -274,6 +318,8 @@ The system enforces security at multiple layers:
 - Chat ownership validation
 - Scoped vector retrieval
 - No cross-user data leakage
+- Query blocked until document processing is complete
+- No response generated without verified context
 
 ---
 
@@ -281,11 +327,11 @@ The system enforces security at multiple layers:
 
 The following features are intentionally not implemented yet:
 
-- Persistent message history
-- Source citation display
 - Frontend user interface
 - Streaming responses
 - Production-grade database
+- SQLite used for development (not production-ready)
+- Background processing is not fault-tolerant (no job queue yet)
 
 These will be addressed in later phases.
 
@@ -293,13 +339,25 @@ These will be addressed in later phases.
 
 ## 🚀 Planned Enhancements
 
-- Chat message persistence
-- Source attribution and citations
-- Automatic cleanup of old data/PDFs
+- Streaming responses
 - Usage quotas and rate limiting
 - Admin management dashboard
 - Deployment hardening
 - Web frontend application
+- Production database integration (PostgreSQL / Supabase)
+- Distributed task queue (Celery / workers)
+
+---
+
+## ⚙️ System Behavior
+
+- PDF uploads are processed asynchronously
+- Queries are only allowed after document indexing is complete
+- Retrieval uses:
+  - User isolation
+  - Chat-based scoping
+  - Global + chat document merging
+- If no relevant context is found, the system returns a fallback response instead of generating an answer
 
 ---
 
