@@ -46,20 +46,6 @@ app.include_router(doc_router)
 def health():
     return {"status": "ok"}
 
-
-@app.post("/upload")
-def upload_pdf(file: UploadFile = File(...)):
-    path = f"data/uploads/{file.filename}"
-    with open(path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    text = extract_text(path)
-    chunks = chunk_text(text)
-    embeddings = embed_texts(chunks)
-    add_documents(chunks, embeddings)
-
-    return {"chunks_added": len(chunks)}
-
 @app.post("/ask")
 def ask(
     data: AskRequest, 
