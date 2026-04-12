@@ -108,7 +108,7 @@ This system supports secure **authentication**, **multi-chat conversations**,
     └── README.md
 
 
-> ⚠️ The `data/` directory is **intentionally ignored** and need to be regenerated at runtime.
+> ⚠️ The `data/` directory is ignored by git but is **persisted locally or via Docker volumes**.
 
 ---
 
@@ -119,6 +119,7 @@ Create a `.env` file in the project root:
 ```ini
 GROQ_API_KEY=your_groq_api_key_here
 SECRET_KEY=your_jwt_secret # for now its hardcoded but is best practice use env
+DATA_DIR=data
 ```
 
 ---
@@ -273,6 +274,54 @@ HTTP/1.1 202 Accepted
 
 ---
 
+## ▶️ Running with Docker
+
+### 1️⃣ Build and start
+
+```bash
+docker compose up --build
+```
+
+---
+
+### 2️⃣ Run in background
+
+```bash
+docker compose up -d
+```
+
+---
+
+### 3️⃣ Stop containers
+
+```bash
+docker compose down
+```
+
+---
+
+### 🌐 Public Access (Optional)
+
+The backend can be exposed securely using Cloudflare Tunnel:
+
+```bash
+cloudflared tunnel --url http://localhost:8000
+```
+
+This provides a temporary public URL without opening ports.
+> ⚠️ Note: Exposing local services via tunneling may be restricted by some ISPs. Check your ISP’s Terms of Service before using this beyond development or testing.
+
+---
+
+### 📦 Notes
+
+- Data is persisted using Docker volumes:
+```ini
+./data → /app/data
+```
+- Environment variables are loaded from .env
+- Application runs as non-root user for proper file permissions
+
 ## 📂 Storage Layout
 
 
@@ -285,6 +334,14 @@ Uploaded documents are organized as:
        └──user_id/
           ├──global/ # context shared between chats
           └──chat_2/ # each separate non shared chat with id
+
+```md
+Storage is environment-aware:
+- Local → `data/`
+- Docker → `/app/data` (mapped to host)
+```
+
+- File storage location is configurable via `DATA_DIR`
 
 ---
 
@@ -332,6 +389,7 @@ The following features are intentionally not implemented yet:
 - Production-grade database
 - SQLite used for development (not production-ready)
 - Background processing is not fault-tolerant (no job queue yet)
+- Optimized for CPU-based inference (embeddings)
 
 These will be addressed in later phases.
 
