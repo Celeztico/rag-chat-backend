@@ -8,7 +8,9 @@ from app.auth.security import get_current_user
 from app.documents.models import Document
 from app.rag.ingest import process_pdf_for_rag
 
-UPLOAD_ROOT = "data/uploads"
+BASE_DIR = os.getenv("DATA_DIR", "data")
+
+UPLOAD_ROOT = f"{BASE_DIR}/uploads"
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 

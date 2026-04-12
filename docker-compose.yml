@@ -12,5 +12,7 @@ services:
       - ./data:/app/data
     ports:
       # SECURITY CRITICAL: Bind ONLY to 127.0.0.1 (localhost) on the VM.
-      # This prevents external devices on the network from accessing the port.
-      - "127.0.0.1:8000:8000"
+      # This prevents external devices on the network from accessing the port. (SAFER)
+      - "8000:8000"  # temporarily this as VM is behind NAT and not directly exposed to the network. Adjust for testing purposes. (use above for  tunneling in general)
+    environment:
+      - DATA_DIR=/app/data # manually overriding path for docker

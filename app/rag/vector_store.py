@@ -1,9 +1,11 @@
 import chromadb
 import os
 
-os.makedirs("data/chroma", exist_ok=True)
+BASE_DIR = os.getenv("DATA_DIR", "data")
 
-client = chromadb.PersistentClient(path="data/chroma")
+os.makedirs(f"{BASE_DIR}/chroma", exist_ok=True)
+
+client = chromadb.PersistentClient(path=f"{BASE_DIR}/chroma")
 
 collection = client.get_or_create_collection("rag_test")
 

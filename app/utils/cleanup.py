@@ -1,10 +1,12 @@
 import os,time
 
+BASE_DIR = os.getenv("DATA_DIR", "data")
+
 def cleanup_uploads(days=7):
     now = time.time()
     cutoff = now - (days * 86400)
 
-    root = "data/uploads"
+    root = f"{BASE_DIR}/uploads"
 
     for root_dir, dirs, files in os.walk(root):
         for file in files:
