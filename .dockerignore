@@ -1,0 +1,26 @@
+# Ignore all python cache at any depth
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+
+# Ignore local virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Ignore your data (crucial for size and persistence)
+data/
+
+# Ignore git and IDE settings
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Ignore OS-specific junk
+.DS_Store
+Thumbs.db
+
+# Ignore secrets
+.env

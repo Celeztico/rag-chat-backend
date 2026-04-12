@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  rag-backend:
+    build: .
+    container_name: rag_backend_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Maps the host's ./data directory to the container's /app/data directory
+      - ./data:/app/data
+    ports:
+      # SECURITY CRITICAL: Bind ONLY to 127.0.0.1 (localhost) on the VM.
+      # This prevents external devices on the network from accessing the port.
+      - "127.0.0.1:8000:8000"
